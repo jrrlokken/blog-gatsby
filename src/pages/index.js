@@ -1,29 +1,42 @@
 import * as React from "react"
-import { Link } from "gatsby"
-import { StaticImage } from "gatsby-plugin-image"
+import { Link, graphql } from "gatsby"
+import './post.css';
 
 import Layout from "../components/layout"
-import Seo from "../components/seo"
 
-const IndexPage = () => (
-  <Layout>
-    <Seo title="Home" />
-    <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
-    <StaticImage
-      src="../images/gatsby-astronaut.png"
-      width={300}
-      quality={95}
-      formats={["AUTO", "WEBP", "AVIF"]}
-      alt="A Gatsby astronaut"
-      style={{ marginBottom: `1.45rem` }}
-    />
-    <p>
-      <Link to="/page-2/">Go to page 2</Link> <br />
-      <Link to="/using-typescript/">Go to "Using TypeScript"</Link>
-    </p>
-  </Layout>
-)
+const IndexPage = (props) => {
+  const postList = props.data.allMarkdownRemark;
+  return (
+    <Layout>
+      {postList.edges.map(({node}, i) => (
+        <Link to={node.fields.slug} key={i} className="link">
+          <div className='post-list'>
+            <h1>{node.frontmatter.title}</h1>
+            <span>{node.frontmatter.date}</span>
+            <p>{node.excerpt}</p>
+          </div>
+        </Link>
+      ))}
+    </Layout>
+  )
+}
 
 export default IndexPage
+export const listQuery = graphql`
+  query ListQuery {
+    allMarkdownRemark(sort: { order: DESC, fields: [frontmatter___date] }) {
+      edges {
+        node {
+          fields {
+            slug
+          }
+          excerpt(pruneLength: 250)
+          frontmatter {
+            date(formatString: "MMMM Do YYYY")
+            title
+          }
+        }
+      }
+    }
+  }
+`;
